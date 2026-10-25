@@ -68,6 +68,8 @@ details{margin-top:16px}summary{color:var(--muted);font-weight:700;font-size:14p
 .chartbox{height:230px;position:relative;margin-top:14px}
 .hidden{display:none}
 .foot{text-align:center;color:#6d7380;font-size:12px;margin:26px 0 0}
+.nutgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.nutgrid div{background:var(--card2);border-radius:14px;padding:12px}.nutgrid b{display:block;font:700 22px var(--head);color:var(--accent)}.nutgrid span{font-size:12.5px;color:var(--muted)}
+.mini{font-size:13px;color:var(--accent);padding:6px 8px;border-radius:8px}.mini:hover{background:var(--card2)}.acts{display:flex;gap:2px;flex-shrink:0}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -87,6 +89,7 @@ details{margin-top:16px}summary{color:var(--muted);font-weight:700;font-size:14p
 </div>
 <div class="tiles" id="tiles" style="margin-bottom:14px"></div>
 <div class="card"><h2>Today so far</h2><div id="todayList"></div></div>
+<div class="card hidden" id="nutCard"><h2>Nutrition today</h2><div class="nutgrid" id="nutToday"></div><p class="sub" id="nutNote" style="font-size:13px;margin-top:10px"></p></div>
 <div class="card" id="lastCard"></div>
 </section>
 
@@ -103,6 +106,7 @@ details{margin-top:16px}summary{color:var(--muted);font-weight:700;font-size:14p
 <p class="sub" style="font-size:13px;margin-top:10px">Each dot is one session. Going up means you're getting stronger.</p>
 </div>
 <div class="card"><h2>Personal bests</h2><div id="bests"></div></div>
+<div class="card"><h2>Nutrition</h2><div class="chips" id="nutChips" style="margin-bottom:6px"></div><div class="chartbox"><canvas id="nutChart"></canvas></div><p class="sub" style="font-size:13px;margin-top:10px" id="nutCap">Add nutrients to a meal and your daily totals will chart here.</p></div>
 <div class="card"><h2>Eating and energy</h2><p class="sub" id="insight">Log a few days and patterns will show up here.</p></div>
 </section>
 </main>
@@ -174,7 +178,7 @@ const wLine = x => `${x.sets} × ${x.reps}${x.load_lb!=null?' · '+x.load_lb+' l
 const todayHabit = () => H.find(x=>x.entry_date===today());
 
 /* ---------- render ---------- */
-function render(){ renderToday(); renderHistory(); renderProgress(); }
+function render(){ renderToday(); renderHistory(); renderProgress(); renderNut(); }
 
 function renderToday(){
   const h = new Date().getHours();
@@ -195,7 +199,7 @@ function renderToday(){
 
   const items = [
     ...tw.map(x=>({t:x.exercise,m:wLine(x),tb:T.w,id:x.id})),
-    ...tm.map(x=>({t:x.meal_type,m:x.food_description,tb:T.m,id:x.id})),
+    ...tm.map(x=>({t:x.meal_type,m:x.food_description+nutLine(x),tb:T.m,id:x.id,hasN:hasNut(x)})),
     ...(th?[{t:'Check-in',m:[th.energy&&'Energy: '+th.energy, th.sleep_hours!=null&&th.sleep_hours+' h sleep', th.water_cups!=null&&th.water_cups+' cups water'].filter(Boolean).join(' · '),tb:T.h,id:th.id}]:[])
   ];
   $('todayList').innerHTML = items.length ? items.map(rowHtml).join('') : '<div class="empty">Nothing yet. Tap + whenever you\'re ready.</div>';
@@ -204,13 +208,13 @@ function renderToday(){
   $('lastCard').innerHTML = lw ? `<h2>Last workout</h2><div class="row"><div><div class="t">${esc(lw.exercise)}</div><div class="m">${wLine(lw)} · ${ago(lw.entry_date)}</div></div><button class="chip" data-again="${esc(lw.exercise)}">Do it again</button></div>` : '';
   $('lastCard').classList.toggle('hidden', !lw);
 }
-const rowHtml = x => `<div class="row"><div><div class="t">${esc(x.t)}</div><div class="m">${esc(x.m)}</div></div><button class="x" data-del="${x.tb}" data-id="${esc(x.id)}" aria-label="Delete">Delete</button></div>`;
+const rowHtml = x => `<div class="row"><div><div class="t">${esc(x.t)}</div><div class="m">${esc(x.m)}</div></div><div class="acts">${x.tb===T.m?`<button class="mini" data-nut="${esc(x.id)}">${x.hasN?'Nutrients':'+ Nutrients'}</button>`:''}<button class="x" data-del="${x.tb}" data-id="${esc(x.id)}" aria-label="Delete">Delete</button></div></div>`;
 
 function renderHistory(){
   $('filter').innerHTML = [['all','Everything'],['w','Workouts'],['m','Meals'],['h','Check-ins']].map(([k,l])=>`<button class="chip ${filter===k?'on':''}" data-f="${k}">${l}</button>`).join('');
   const all = [
     ...W.map(x=>({k:'w',d:x.entry_date,c:x.created_at,t:x.exercise,m:wLine(x)+(x.notes?' — '+x.notes:''),tb:T.w,id:x.id})),
-    ...M.map(x=>({k:'m',d:x.entry_date,c:x.created_at,t:x.meal_type,m:x.food_description+(x.feeling_after?' · '+x.feeling_after:''),tb:T.m,id:x.id})),
+    ...M.map(x=>({k:'m',d:x.entry_date,c:x.created_at,t:x.meal_type,m:x.food_description+(x.feeling_after?' · '+x.feeling_after:'')+nutLine(x),tb:T.m,id:x.id,hasN:hasNut(x)})),
     ...H.map(x=>({k:'h',d:x.entry_date,c:x.created_at,t:'Check-in',m:[x.energy,x.sleep_hours!=null&&x.sleep_hours+' h sleep',x.water_cups!=null&&x.water_cups+' cups',x.notes].filter(Boolean).join(' · '),tb:T.h,id:x.id})),
     ...C.map(x=>({k:'h',d:x.entry_date,c:x.created_at,t:'Check-in',m:[x.energy,x.sleep_hours!=null&&x.sleep_hours+' h sleep',x.notes].filter(Boolean).join(' · '),tb:T.c,id:x.id}))
   ].filter(x=>filter==='all'||x.k===filter).sort((a,b)=>b.d.localeCompare(a.d)||String(b.c).localeCompare(String(a.c)));
@@ -298,6 +302,7 @@ function mealForm(){
   open(head('Log a meal') + `
   <label style="margin-top:0">Which one?</label>${chips('mt',['Breakfast','Morning snack','Lunch','Afternoon snack','Dinner','Evening snack','Drink'],mealGuess())}
   <label for="mFood">What did you have?</label><textarea id="mFood" placeholder="e.g. egg and cheese sandwich, milk"></textarea>
+  <button type="button" class="mini" id="cpPrompt" style="margin-top:6px">Copy AI prompt</button>
   <details><summary>More details</summary>
     <label>Hunger before</label>${chips('hb',['Not hungry','A little','Hungry','Very hungry'])}
     <label>How did you feel after?</label>${chips('fa',['Comfortable','Still hungry','Too full'])}
@@ -305,6 +310,7 @@ function mealForm(){
     <label>Date</label><input id="mDate" type="date" value="${today()}">
   </details>
   <button class="save" id="go">Save meal</button>`);
+  $('cpPrompt').onclick = async () => { const f=$('mFood').value.trim(); if(!f) return toast('Type your meal first', true); toast(await copyText(promptFor(f)) ? 'Prompt copied. Paste it into any AI.' : 'Could not copy', 0); };
   $('go').onclick = async () => {
     const f = $('mFood').value.trim(); if(!f) return toast('Add what you ate', true);
     $('go').disabled = true;
@@ -330,10 +336,67 @@ function checkinForm(){
   };
 }
 
+/* ---------- nutrients ---------- */
+const NUT=[['calories','Calories','kcal','calories'],['protein','Protein','g','protein_g'],['carbs','Carbs','g','carbs_g'],['fat','Fat','g','fat_g'],['fiber','Fiber','g','fiber_g'],['sugar','Sugar','g','sugar_g']];
+const ALIAS={calories:'calories',kcal:'calories',energy:'calories',protein:'protein',proteins:'protein',carbs:'carbs',carb:'carbs',carbohydrates:'carbs',carbohydrate:'carbs',fat:'fat',fats:'fat',fiber:'fiber',fibre:'fiber',sugar:'sugar',sugars:'sugar'};
+let nutMetric='protein', nutChart=null;
+const hasNut = x => NUT.some(n=>x[n[3]]!=null);
+const nutLine = x => hasNut(x) ? ' · ' + [x.protein_g!=null&&x.protein_g+'g protein',x.carbs_g!=null&&x.carbs_g+'g carbs',x.calories!=null&&x.calories+' kcal'].filter(Boolean).join(', ') : '';
+function parseNut(str){ const o={}; String(str).replace(/([a-z]+)\s*[:=]\s*(\d+(?:\.\d+)?)/gi,(_,k,v)=>{ const key=ALIAS[k.toLowerCase()]; if(key) o[key]=Number(v); return ''; }); return o; }
+const promptFor = meal => `Estimate the nutrients in the meal below.
+
+Reply with ONLY one line, exactly in this format and nothing else (no extra words, no markdown, no explanation):
+calories:250kcal,protein:26g,carbs:5g,fat:10g,fiber:3g,sugar:2g
+
+Rules: use your best estimate as whole numbers, grams for everything except calories (kcal). Include all six values in that order. If portions aren't given, assume one typical serving.
+
+Meal: ${meal}`;
+async function copyText(t){
+  try{ await navigator.clipboard.writeText(t); return true; }catch(e){
+    const a=document.createElement('textarea'); a.value=t; a.style.cssText='position:fixed;opacity:0'; document.body.appendChild(a); a.select();
+    let ok=false; try{ ok=document.execCommand('copy'); }catch(_){} a.remove(); return ok; }
+}
+function nutForm(id){
+  const m = M.find(x=>String(x.id)===String(id)); if(!m) return;
+  const pre = hasNut(m) ? NUT.filter(n=>m[n[3]]!=null).map(n=>n[0]+':'+m[n[3]]+(n[2]==='g'?'g':'kcal')).join(',') : '';
+  open(head('Add nutrients') + `<p class="sub" style="margin-bottom:14px"><b style="color:var(--text)">${esc(m.meal_type)}:</b> ${esc(m.food_description)}</p>
+  <label style="margin-top:0">Step 1: ask an AI</label><button class="chip" id="cpP">Copy AI prompt</button>
+  <label for="nIn">Step 2: paste its answer</label><textarea id="nIn" placeholder="calories:250kcal,protein:26g,carbs:5g,fat:10g,fiber:3g,sugar:2g">${esc(pre)}</textarea>
+  <div class="hint" id="nPrev"></div><button class="save" id="go">Save nutrients</button>`);
+  const prev=()=>{ const o=parseNut($('nIn').value), k=Object.keys(o); $('nPrev').textContent = k.length ? 'Reads as: '+NUT.filter(n=>o[n[0]]!=null).map(n=>n[1]+' '+o[n[0]]+n[2]).join(', ') : ($('nIn').value.trim()?'Could not read that. Check the format.':''); };
+  $('nIn').addEventListener('input',prev); prev();
+  $('cpP').onclick = async () => toast(await copyText(promptFor(m.food_description)) ? 'Prompt copied. Paste it into any AI.' : 'Could not copy', 0);
+  $('go').onclick = async () => {
+    const o=parseNut($('nIn').value); if(!Object.keys(o).length) return toast('Paste the AI answer first', true);
+    const p={}; NUT.forEach(n=>p[n[3]]=o[n[0]]??null);
+    $('go').disabled=true;
+    const {error}=await db.from(T.m).update(p).eq('id',m.id);
+    if(error){ $('go').disabled=false; return toast(/column|schema/i.test(error.message)?'Run the nutrients SQL in Supabase first':error.message,true); }
+    close(); toast('Nutrients saved'); load();
+  };
+}
+function renderNut(){
+  const sum=(list,col)=>list.reduce((a,x)=>a+(Number(x[col])||0),0);
+  const tm=M.filter(x=>x.entry_date===today()), tn=tm.filter(hasNut);
+  $('nutCard').classList.toggle('hidden',!tn.length);
+  $('nutToday').innerHTML=NUT.map(n=>`<div><b>${Math.round(sum(tn,n[3]))}<small style="font-size:13px"> ${n[2]}</small></b><span>${n[1]}</span></div>`).join('');
+  $('nutNote').textContent=`Counted from ${tn.length} of ${tm.length} meal${tm.length===1?'':'s'} today.`;
+  $('nutChips').innerHTML=NUT.map(n=>`<button class="chip ${nutMetric===n[0]?'on':''}" data-nm="${n[0]}">${n[1]}</button>`).join('');
+  if(nutChart){nutChart.destroy();nutChart=null;}
+  const col=NUT.find(n=>n[0]===nutMetric), by={};
+  M.filter(hasNut).forEach(x=>{ by[x.entry_date]=(by[x.entry_date]||0)+(Number(x[col[3]])||0); });
+  const days=Object.keys(by).sort().slice(-14);
+  if(!days.length) return;
+  $('nutCap').textContent=`Daily ${col[1].toLowerCase()} (${col[2]}) from meals with nutrients added. Meals without them aren't counted.`;
+  nutChart=new Chart($('nutChart'),{type:'bar',data:{labels:days.map(d=>parse(d).toLocaleDateString(undefined,{month:'short',day:'numeric'})),datasets:[{data:days.map(d=>Math.round(by[d])),backgroundColor:'#ffb454',borderRadius:8}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#9aa0ad'},grid:{display:false}},y:{beginAtZero:true,ticks:{color:'#9aa0ad',precision:0},grid:{color:'#2d313c'}}}}});
+}
+
 /* ---------- events ---------- */
 document.addEventListener('click', e => {
   const t = e.target;
   const add = t.closest('[data-add]'); if(add){ const k=add.dataset.add; return k==='w'?workoutForm():k==='m'?mealForm():checkinForm(); }
+  const nu = t.closest('[data-nut]'); if(nu) return nutForm(nu.dataset.nut);
+  const nm = t.closest('[data-nm]'); if(nm){ nutMetric=nm.dataset.nm; return renderNut(); }
   const ag = t.closest('[data-again]'); if(ag) return workoutForm(ag.dataset.again);
   const d = t.closest('[data-del]'); if(d) return del(d.dataset.del, d.dataset.id);
   const f = t.closest('[data-f]'); if(f){ filter=f.dataset.f; return renderHistory(); }
