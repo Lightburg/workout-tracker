@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101114">
+<title>Progress — Workout & Food Tracker</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+:root{color-scheme:dark;--bg:#101114;--panel:#191b21;--panel2:#20232b;--line:#30333d;--text:#f4f5f7;--muted:#a7acb8;--accent:#b6f36b;--accent2:#d5ff9d;--danger:#ff8585;--radius:18px}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(900px 500px at 100% -10%,#252c26 0%,transparent 55%),var(--bg);color:var(--text);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input,select,textarea{font:inherit}button{cursor:pointer}a{color:var(--accent)}
+.wrap{max-width:1120px;margin:auto;padding:20px 16px 60px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:6px 0 22px}.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;letter-spacing:-.5px}.logo{width:36px;height:36px;border-radius:12px;background:var(--accent);color:#101114;display:grid;place-items:center;font-weight:900}
+.pill{border:1px solid var(--line);border-radius:99px;padding:8px 11px;color:var(--muted);font-size:12px}
+h1{font-size:clamp(27px,5vw,42px);letter-spacing:-1.5px;line-height:1.08;margin:0 0 10px}h2{font-size:19px;margin:0 0 5px;letter-spacing:-.4px}h3{font-size:14px;margin:0 0 12px}p{margin:0;color:var(--muted)}.hero{display:flex;justify-content:space-between;gap:20px;align-items:flex-end;margin-bottom:22px}.hero p{max-width:570px}.eyebrow{color:var(--accent);font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px}
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px}.card{background:rgba(25,27,33,.96);border:1px solid var(--line);border-radius:var(--radius);padding:17px;min-width:0}.span-12{grid-column:span 12}.span-8{grid-column:span 8}.span-7{grid-column:span 7}.span-6{grid-column:span 6}.span-5{grid-column:span 5}.span-4{grid-column:span 4}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}.stat{background:var(--panel2);border-radius:14px;padding:13px}.stat .n{font-size:25px;font-weight:800;letter-spacing:-1px}.stat .l{font-size:12px;color:var(--muted);margin-top:2px}
+.tabs{display:flex;gap:6px;overflow:auto;padding:5px;background:#17191e;border:1px solid var(--line);border-radius:14px;margin:18px 0 14px}.tab{border:0;background:transparent;color:var(--muted);padding:10px 13px;border-radius:10px;white-space:nowrap;font-weight:700}.tab.active{background:var(--accent);color:#141610}
+label{display:block;color:#d7d9df;font-size:12px;font-weight:700;margin:0 0 6px}.field{margin-bottom:12px}input,select,textarea{width:100%;border:1px solid #3a3d47;background:#111318;color:var(--text);border-radius:11px;padding:11px 12px;outline:none;min-width:0}input:focus,select:focus,textarea:focus{border-color:var(--accent)}textarea{resize:vertical;min-height:75px}input[type=date]{color-scheme:dark}.row{display:flex;gap:10px}.row>*{flex:1;min-width:0}
+.btn{border:0;background:var(--accent);color:#141610;border-radius:11px;padding:11px 14px;font-weight:800}.btn:hover{background:var(--accent2)}.btn.secondary{background:#282b33;color:var(--text);border:1px solid var(--line)}.btn.danger{background:#44272b;color:#ffc5c5;border:1px solid #75434a}.btn.small{padding:7px 9px;font-size:12px}.actions{display:flex;gap:8px;flex-wrap:wrap}.hidden{display:none!important}.muted{color:var(--muted)}.smalltext{font-size:12px;color:var(--muted)}.list{display:flex;flex-direction:column;gap:8px}.item{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;background:#14161b;border:1px solid #2b2e37;padding:12px;border-radius:12px}.item strong{display:block}.item .meta{font-size:12px;color:var(--muted);margin-top:3px}.empty{padding:22px;text-align:center;color:var(--muted);border:1px dashed #3a3d47;border-radius:12px}.tag{display:inline-flex;padding:4px 8px;border-radius:99px;background:#283022;color:var(--accent);font-size:11px;font-weight:800}.status{font-size:12px;color:var(--muted);min-height:18px;margin-top:9px}.status.error{color:var(--danger)}.status.ok{color:var(--accent)}.chartbox{height:260px;position:relative}.sectionhead{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:14px}.sectionhead p{font-size:12px}.footer{margin-top:18px;text-align:center;font-size:12px;color:#777d89}.notice{padding:12px;border:1px solid #665a31;background:#292519;border-radius:12px;color:#e9d9a3;font-size:12px;margin-bottom:14px}.foodchips{display:flex;flex-wrap:wrap;gap:6px}.foodchips span{font-size:12px;border:1px solid var(--line);border-radius:99px;padding:6px 9px;color:var(--muted);cursor:pointer}.foodchips span:hover{border-color:var(--accent);color:var(--text)}
+@media(max-width:760px){.span-8,.span-7,.span-6,.span-5,.span-4{grid-column:span 12}.hero{display:block}.hero .pill{display:inline-block;margin-top:12px}.stats{gap:7px}.stat{padding:10px}.stat .n{font-size:21px}.wrap{padding:14px 12px 40px}.card{padding:14px}.row.mobile-stack{display:block}.row.mobile-stack>*{margin-bottom:10px}.top{margin-bottom:18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+<div class="brand"><div class="logo">P</div> progress<span style="color:var(--accent)">.</span></div>
+<div class="pill" id="cloudStatus">Connected to Supabase</div>
+</header>
+<main id="appScreen">
+<div class="hero">
+<div><div class="eyebrow">Small steps, real progress</div><h1>Build strength.<br>Keep the receipts.</h1><p>Track your workouts, food, energy, and progress over time. No perfect days required—just honest logs.</p></div>
+<div class="actions"><span class="pill">Personal Mode</span></div>
+</div>
+<div class="notice">Health note: this tracker is for habits and strength—not for strict dieting. Eat regularly, avoid forcing rapid weight changes, and ask a trusted adult or clinician for help if needed.</div>
+<div class="stats">
+<div class="stat"><div class="n" id="workoutCount">0</div><div class="l">Workouts logged</div></div>
+<div class="stat"><div class="n" id="exerciseCount">0</div><div class="l">Exercise entries</div></div>
+<div class="stat"><div class="n" id="mealCount">0</div><div class="l">Meals logged this week</div></div>
+</div>
+<nav class="tabs" aria-label="Tracker sections">
+<button class="tab active" data-tab="dashboard">Overview</button><button class="tab" data-tab="workouts">Workouts</button><button class="tab" data-tab="diet">Food & habits</button><button class="tab" data-tab="progress">Progress</button>
+</nav>
+<section id="tab-dashboard" class="tabpage">
+<div class="grid">
+<div class="card span-7"><div class="sectionhead"><div><h2>Recent activity</h2><p>Your latest logs</p></div><span class="tag">LIVE</span></div><div id="recentList" class="list"></div></div>
+<div class="card span-5"><div class="sectionhead"><div><h2>Quick log</h2><p>Save something in seconds</p></div></div>
+<div class="actions"><button class="btn" data-goto="workouts">+ Workout</button><button class="btn secondary" data-goto="diet">+ Meal</button></div>
+<div style="height:16px"></div><h3>Today's check-in</h3>
+<div class="row">
+<div class="field"><label for="energy">Energy</label><select id="energy"><option value="">Choose…</option><option>Low</option><option>Okay</option><option>Good</option><option>Great</option></select></div>
+<div class="field"><label for="sleep">Sleep (hours)</label><input id="sleep" type="number" min="0" max="24" step=".5" placeholder="e.g. 8"></div>
+</div>
+<div class="field"><label for="dailyNote">Note (optional)</label><textarea id="dailyNote" placeholder="Mood, soreness, appetite, anything useful…"></textarea></div>
+<button class="btn" id="saveCheckin">Save check-in</button><div class="status" id="checkinStatus"></div>
+</div>
+<div class="card span-12"><div class="sectionhead"><div><h2>Strength trend</h2><p>See your logged reps for the selected exercise</p></div><select id="trendExercise" style="max-width:220px"></select></div><div class="chartbox"><canvas id="trendChart"></canvas></div><div class="smalltext">This chart shows reps per set for your exercise entries.</div></div>
+</div>
+</section>
+<section id="tab-workouts" class="tabpage hidden">
+<div class="grid">
+<div class="card span-5"><h2>Log a workout exercise</h2><p style="margin:4px 0 16px">Add one entry for each exercise you do.</p>
+<form id="workoutForm">
+<div class="field"><label for="wDate">Date</label><input id="wDate" type="date" required></div>
+<div class="field"><label for="wName">Exercise</label><input id="wName" required placeholder="e.g. Incline push-ups"></div>
+<div class="row">
+<div class="field"><label for="wSets">Sets</label><input id="wSets" type="number" min="1" max="20" value="3" required></div>
+<div class="field"><label for="wReps">Reps per set</label><input id="wReps" type="number" min="1" max="200" value="8" required></div>
+</div>
+<div class="row">
+<div class="field"><label for="wLoad">Backpack weight (optional, lb)</label><input id="wLoad" type="number" min="0" max="100" step=".5" placeholder="Empty = bodyweight"></div>
+<div class="field"><label for="wEffort">Effort</label><select id="wEffort"><option value="">Choose…</option><option>Easy</option><option>Moderate</option><option>Hard</option></select></div>
+</div>
+<div class="field"><label for="wNotes">Notes</label><textarea id="wNotes" placeholder="Form, variation, how it felt…"></textarea></div>
+<button class="btn" type="submit">Save exercise</button><div class="status" id="workoutStatus"></div>
+</form>
+<div class="foodchips" id="exercisePresets" style="margin-top:15px"><span>Incline push-ups</span><span>Backpack rows</span><span>Squats</span><span>Glute bridges</span></div>
+</div>
+<div class="card span-7"><div class="sectionhead"><div><h2>Workout history</h2><p>Most recent first</p></div><input id="workoutSearch" placeholder="Search exercise…" style="max-width:190px"></div><div id="workoutList" class="list"></div></div>
+</div>
+</section>
+<section id="tab-diet" class="tabpage hidden">
+<div class="grid">
+<div class="card span-5"><h2>Log food or a meal</h2><p style="margin:4px 0 16px">Record what you ate—no calorie target needed.</p>
+<form id="mealForm">
+<div class="field"><label for="mDate">Date</label><input id="mDate" type="date" required></div>
+<div class="field"><label for="mType">Meal / snack</label><select id="mType"><option>Breakfast</option><option>Morning snack</option><option>Lunch</option><option>Afternoon snack</option><option>Dinner</option><option>Evening snack</option><option>Drink</option><option>Other</option></select></div>
+<div class="field"><label for="mFood">What did you eat or drink?</label><textarea id="mFood" required placeholder="e.g. egg and cheese sandwich, milk"></textarea></div>
+<div class="row">
+<div class="field"><label for="mHunger">Hunger before</label><select id="mHunger"><option value="">Skip</option><option>Not hungry</option><option>A little hungry</option><option>Hungry</option><option>Very hungry</option></select></div>
+<div class="field"><label for="mFeel">After eating</label><select id="mFeel"><option value="">Skip</option><option>Comfortable</option><option>Still hungry</option><option>Too full</option></select></div>
+</div>
+<div class="field"><label for="mNotes">Notes (optional)</label><textarea id="mNotes" placeholder="Appetite, what made this meal easier, etc."></textarea></div>
+<button class="btn" type="submit">Save meal</button><div class="status" id="mealStatus"></div>
+</form>
+</div>
+<div class="card span-7"><div class="sectionhead"><div><h2>Food log</h2><p>Use this to spot patterns.</p></div><input id="mealSearch" placeholder="Search food…" style="max-width:180px"></div><div id="mealList" class="list"></div></div>
+<div class="card span-12"><h2>Daily habits</h2><p style="margin:4px 0 14px">Optional check-in for hydration, sleep, energy, and appetite.</p>
+<form id="habitForm"><div class="row mobile-stack">
+<div class="field"><label for="hDate">Date</label><input id="hDate" type="date" required></div>
+<div class="field"><label for="hWater">Water (cups, estimate)</label><input id="hWater" type="number" min="0" max="50" placeholder="e.g. 6"></div>
+<div class="field"><label for="hSleep">Sleep (hours)</label><input id="hSleep" type="number" min="0" max="24" step=".5" placeholder="e.g. 8"></div>
+<div class="field"><label for="hEnergy">Energy</label><select id="hEnergy"><option value="">Choose…</option><option>Low</option><option>Okay</option><option>Good</option><option>Great</option></select></div>
+</div><div class="field"><label for="hNotes">Notes</label><textarea id="hNotes" placeholder="How was your appetite, mood, or recovery?"></textarea></div><button class="btn" type="submit">Save daily habits</button><div class="status" id="habitStatus"></div></form>
+<div style="height:14px"></div><div id="habitList" class="list"></div>
+</div>
+</div>
+</section>
+<section id="tab-progress" class="tabpage hidden">
+<div class="grid">
+<div class="card span-6"><h2>Exercise progress</h2><p style="margin:4px 0 14px">Choose an exercise to compare logged reps over time.</p><div class="field"><label for="progressExercise">Exercise</label><select id="progressExercise"></select></div><div class="chartbox"><canvas id="progressChart"></canvas></div></div>
+<div class="card span-6"><h2>Personal bests</h2><p style="margin:4px 0 14px">Based on the highest reps you've logged for each exercise.</p><div id="bestList" class="list"></div></div>
+<div class="card span-12"><h2>What progress means</h2><div style="height:8px"></div><div class="foodchips"><span>More clean reps</span><span>Better form</span><span>More controlled movement</span><span>Steady energy</span><span>Regular meals</span><span>Good sleep</span></div></div>
+</div>
+</section>
+<div class="status" id="globalStatus" aria-live="polite"></div>
+</main>
+<div class="footer">Personal tracker hosted securely via GitHub Pages & Supabase.</div>
+</div>
+<script>
+(() => {
+const SUPABASE_URL = "https://olxahkslrrjqywsjaljj.supabase.co";
+const SUPABASE_KEY = "sb_publishable_NTTjfW44_mBVGb1pAuJFSA_zAwxCCY4";
+const $ = id => document.getElementById(id);
+const today = () => new Date(Date.now() - new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
+
+['wDate','mDate','hDate'].forEach(id => { if($(id)) $(id).value = today(); });
+
+let client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let workouts = [], meals = [], habits = [], checkins = [], trendChart = null, progressChart = null;
+
+function status(id, msg, type='') { const el=$(id); if(!el)return; el.textContent=msg; el.className='status '+type; }
+function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+async function fetchTable(table){
+  const {data,error}=await client.from(table).select('*').order('created_at',{ascending:false}).limit(500);
+  if(error)throw error;
+  return data||[];
+}
+
+async function refreshAll(){
+  $('cloudStatus').textContent = 'Syncing…';
+  try{
+    [workouts, meals, habits, checkins] = await Promise.all([
+      fetchTable('workout_entries'),
+      fetchTable('meal_entries'),
+      fetchTable('daily_habits'),
+      fetchTable('daily_checkins')
+    ]);
+    $('cloudStatus').textContent = 'Connected to Supabase';
+    renderAll();
+  }catch(e){
+    $('cloudStatus').textContent = 'Sync issue';
+    status('globalStatus','Could not load data: '+e.message,'error');
+  }
+}
+
+async function insert(table, payload, statusId){
+  const {error} = await client.from(table).insert([payload]);
+  if(error){status(statusId, error.message, 'error'); return false;}
+  status(statusId, 'Saved and synced.', 'ok');
+  await refreshAll();
+  return true;
+}
+
+async function removeRow(table, id){
+  if(!confirm('Delete this entry? This cannot be undone.')) return;
+  const {error} = await client.from(table).delete().eq('id', id);
+  if(error){status('globalStatus','Could not delete: '+error.message,'error'); return;}
+  status('globalStatus','Entry deleted.','ok');
+  await refreshAll();
+}
+
+$('workoutForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const payload = {
+    entry_date: $('wDate').value,
+    exercise: $('wName').value.trim(),
+    sets: Number($('wSets').value),
+    reps: Number($('wReps').value),
+    load_lb: $('wLoad').value === '' ? null : Number($('wLoad').value),
+    effort: $('wEffort').value || null,
+    notes: $('wNotes').value.trim() || null
+  };
+  if(!payload.exercise) return;
+  if(await insert('workout_entries', payload, 'workoutStatus')){
+    const keepDate = $('wDate').value;
+    $('workoutForm').reset();
+    $('wDate').value = keepDate;
+    $('wSets').value = 3;
+    $('wReps').value = 8;
+  }
+});
+
+$('mealForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const payload = {
+    entry_date: $('mDate').value,
+    meal_type: $('mType').value,
+    food_description: $('mFood').value.trim(),
+    hunger_before: $('mHunger').value || null,
+    feeling_after: $('mFeel').value || null,
+    notes: $('mNotes').value.trim() || null
+  };
+  if(await insert('meal_entries', payload, 'mealStatus')){
+    const d = $('mDate').value;
+    $('mealForm').reset();
+    $('mDate').value = d;
+  }
+});
+
+$('habitForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const payload = {
+    entry_date: $('hDate').value,
+    water_cups: $('hWater').value === '' ? null : Number($('hWater').value),
+    sleep_hours: $('hSleep').value === '' ? null : Number($('hSleep').value),
+    energy: $('hEnergy').value || null,
+    notes: $('hNotes').value.trim() || null
+  };
+  if(await insert('daily_habits', payload, 'habitStatus')){
+    const d = $('hDate').value;
+    $('habitForm').reset();
+    $('hDate').value = d;
+  }
+});
+
+$('saveCheckin').addEventListener('click', async () => {
+  const payload = {
+    entry_date: today(),
+    energy: $('energy').value || null,
+    sleep_hours: $('sleep').value === '' ? null : Number($('sleep').value),
+    notes: $('dailyNote').value.trim() || null
+  };
+  if(await insert('daily_checkins', payload, 'checkinStatus')){
+    $('energy').value = '';
+    $('sleep').value = '';
+    $('dailyNote').value = '';
+  }
+});
+
+function item(title, meta, id, table, desc=''){
+  return `<div class="item"><div><strong>${esc(title)}</strong><div class="meta">${esc(meta)}</div>${desc?`<div class="meta">${esc(desc)}</div>`:''}</div><button class="btn danger small" data-delete="${esc(table)}" data-id="${esc(id)}" aria-label="Delete entry">Delete</button></div>`;
+}
+
+function noItems(msg){return `<div class="empty">${esc(msg)}</div>`;}
+
+function renderWorkouts(){
+  const q = $('workoutSearch').value.toLowerCase();
+  const filtered = workouts.filter(x => (x.exercise||'').toLowerCase().includes(q));
+  $('workoutList').innerHTML = filtered.length ? filtered.map(x => item(x.exercise, `${x.entry_date} · ${x.sets} sets × ${x.reps} reps${x.load_lb!=null?' · '+x.load_lb+' lb':''}${x.effort?' · '+x.effort:''}`, x.id, 'workout_entries', x.notes||'')).join('') : noItems('No workout entries yet.');
+  $('workoutCount').textContent = new Set(workouts.map(x => x.entry_date)).size;
+  $('exerciseCount').textContent = workouts.length;
+}
+
+function renderMeals(){
+  const q = $('mealSearch').value.toLowerCase();
+  const filtered = meals.filter(x => ((x.food_description||'') + ' ' + (x.meal_type||'')).toLowerCase().includes(q));
+  $('mealList').innerHTML = filtered.length ? filtered.map(x => item(x.meal_type, `${x.entry_date}${x.hunger_before?' · Hunger: '+x.hunger_before:''}${x.feeling_after?' · After: '+x.feeling_after:''}`, x.id, 'meal_entries', x.food_description+(x.notes?' — '+x.notes:''))).join('') : noItems('No food logs yet.');
+  
+  const d = new Date(); const day = (d.getDay()+6)%7; d.setDate(d.getDate()-day); d.setHours(0,0,0,0); const monday = d.toISOString().slice(0,10);
+  $('mealCount').textContent = meals.filter(x => x.entry_date >= monday).length;
+  $('habitList').innerHTML = habits.length ? habits.slice(0,10).map(x => item(x.entry_date, `${x.water_cups!=null?'Water: '+x.water_cups+' cups · ':''}${x.sleep_hours!=null?'Sleep: '+x.sleep_hours+' h · ':''}${x.energy||''}`, x.id, 'daily_habits', x.notes||'')).join('') : noItems('No daily habit logs yet.');
+}
+
+function renderRecent(){
+  const all = [
+    ...workouts.map(x => ({date: x.entry_date, title: x.exercise, meta: `Workout · ${x.sets} × ${x.reps}`})),
+    ...meals.map(x => ({date: x.entry_date, title: x.meal_type, meta: x.food_description})),
+    ...checkins.map(x => ({date: x.entry_date, title: 'Daily check-in', meta: [x.energy, x.sleep_hours!=null?x.sleep_hours+' h sleep':'', x.notes].filter(Boolean).join(' · ')}))
+  ].sort((a,b) => (b.date||'').localeCompare(a.date||'')).slice(0,8);
+  $('recentList').innerHTML = all.length ? all.map(x => `<div class="item"><div><strong>${esc(x.title)}</strong><div class="meta">${esc(x.date)} · ${esc(x.meta)}</div></div></div>`).join('') : noItems('Your recent activity will show up here.');
+}
+
+function exerciseOptions(){
+  const names = [...new Set(workouts.map(x => x.exercise).filter(Boolean))].sort((a,b) => a.localeCompare(b));
+  ['trendExercise','progressExercise'].forEach(id => {
+    const old = $(id).value;
+    $(id).innerHTML = names.length ? names.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('') : '<option value="">Log an exercise first</option>';
+    if(names.includes(old)) $(id).value = old;
+  });
+}
+
+function makeChart(canvasId, selectId, existing){
+  const name = $(selectId).value;
+  const data = workouts.filter(x => x.exercise === name).sort((a,b) => (a.entry_date||'').localeCompare(b.entry_date||'') || String(a.created_at).localeCompare(String(b.created_at)));
+  const labels = data.map(x => x.entry_date);
+  const values = data.map(x => x.reps);
+  
+  if(existing) existing.destroy();
+  if(!name || !data.length) return null;
+
+  return new Chart($(canvasId), {
+    type: 'line',
+    data: {
+      labels, 
+      datasets:[{
+        label:'Reps per set', 
+        data:values, 
+        borderColor:'#b6f36b', 
+        backgroundColor:'rgba(182,243,107,.12)', 
+        fill:true, 
+        tension:.25, 
+        pointRadius:4
+      }]
+    },
+    options: {
+      responsive:true, 
+      maintainAspectRatio:false, 
+      plugins:{legend:{labels:{color:'#a7acb8'}}}, 
+      scales:{
+        x:{ticks:{color:'#a7acb8', maxRotation:45}, grid:{color:'#30333d'}}, 
+        y:{beginAtZero:true, ticks:{color:'#a7acb8', precision:0}, grid:{color:'#30333d'}}
+      }
+    }
+  });
+}
+
+function renderBests(){
+  const map = {};
+  workouts.forEach(x => {if(!map[x.exercise] || x.reps > map[x.exercise].reps) map[x.exercise] = x;});
+  const arr = Object.values(map).sort((a,b) => b.reps - a.reps);
+  $('bestList').innerHTML = arr.length ? arr.map(x => `<div class="item"><div><strong>${esc(x.exercise)}</strong><div class="meta">${x.reps} reps/set · ${x.sets} sets · ${esc(x.entry_date)}${x.load_lb!=null?' · '+x.load_lb+' lb':''}</div></div><span class="tag">${x.reps} reps</span></div>`).join('') : noItems('Your bests will appear after you log workouts.');
+}
+
+function renderAll(){
+  renderWorkouts(); renderMeals(); renderRecent(); exerciseOptions(); renderBests();
+  trendChart = makeChart('trendChart', 'trendExercise', trendChart);
+  progressChart = makeChart('progressChart', 'progressExercise', progressChart);
+}
+
+$('workoutSearch').addEventListener('input', renderWorkouts);
+$('mealSearch').addEventListener('input', renderMeals);
+$('trendExercise').addEventListener('change', () => { trendChart = makeChart('trendChart', 'trendExercise', trendChart); });
+$('progressExercise').addEventListener('change', () => { progressChart = makeChart('progressChart', 'progressExercise', progressChart); });
+
+document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t === b));
+  document.querySelectorAll('.tabpage').forEach(p => p.classList.toggle('hidden', p.id !== 'tab-' + b.dataset.tab));
+  if(b.dataset.tab === 'progress') progressChart = makeChart('progressChart', 'progressExercise', progressChart);
+}));
+
+document.querySelectorAll('[data-goto]').forEach(b => b.addEventListener('click', () => {
+  const targetTab = document.querySelector(`[data-tab="${b.dataset.goto}"]`);
+  if(targetTab) targetTab.click();
+}));
+
+const presets = $('exercisePresets');
+if(presets){
+  presets.addEventListener('click', e => {
+    if(e.target.tagName === 'SPAN'){
+      $('wName').value = e.target.textContent;
+    }
+  });
+}
+
+document.addEventListener('click', e => { 
+  const b = e.target.closest('[data-delete]'); 
+  if(b) removeRow(b.dataset.delete, b.dataset.id); 
+});
+
+refreshAll();
+})();
+</script>
+</body>
+</html>
