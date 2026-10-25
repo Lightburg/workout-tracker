@@ -111,6 +111,7 @@ details{margin-top:16px}summary{color:var(--muted);font-weight:700;font-size:14p
 </section>
 </main>
 <div class="foot">Eat regularly, sleep well, and build slowly. If food or weight ever feels stressful, talk to someone you trust.</div>
+<div class="foot" style="margin-top:8px"><button class="mini" id="devId">Copy this device's ID</button></div>
 </div>
 
 <nav><div>
@@ -127,7 +128,7 @@ details{margin-top:16px}summary{color:var(--muted);font-weight:700;font-size:14p
 (() => {
 const SUPABASE_URL = "https://olxahkslrrjqywsjaljj.supabase.co";
 const SUPABASE_KEY = "sb_publishable_NTTjfW44_mBVGb1pAuJFSA_zAwxCCY4";
-const AI_ENABLED = true; // set to true after deploying the estimate-nutrients Supabase function
+const AI_ENABLED = false; // set to true after deploying the estimate-nutrients Supabase function
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -139,9 +140,18 @@ let W = [], M = [], H = [], C = [], view = 'today', filter = 'all', chart = null
 const T = {w:'workout_entries', m:'meal_entries', h:'daily_habits', c:'daily_checkins'};
 
 /* ---------- data ---------- */
+let uid = null;
+async function ensureAuth(){
+  const {data:{session}} = await db.auth.getSession();
+  if(session){ uid = session.user.id; return; }
+  const {data,error} = await db.auth.signInAnonymously();
+  if(error) throw new Error(/anonymous/i.test(error.message) ? 'Turn on anonymous sign-ins in Supabase first' : error.message);
+  uid = data.session.user.id;
+}
 async function load(){
   setSync('busy','Syncing');
   try{
+    await ensureAuth();
     const get = async t => { const {data,error} = await db.from(t).select('*').order('created_at',{ascending:false}).limit(1000); if(error) throw error; return data||[]; };
     [W,M,H,C] = await Promise.all([get(T.w),get(T.m),get(T.h),get(T.c)]);
     setSync('ok','Saved');
@@ -428,6 +438,7 @@ document.addEventListener('click', e => {
   const nb = t.closest('.nb'); if(nb){ view=nb.dataset.v; document.querySelectorAll('.nb').forEach(b=>b.classList.toggle('on',b===nb)); ['today','history','progress'].forEach(v=>$('v-'+v).classList.toggle('hidden',v!==view)); if(view==='progress') drawChart(); window.scrollTo(0,0); }
 });
 $('fab').onclick = chooser;
+$('devId').onclick = async () => toast(uid ? (await copyText(uid) ? 'Device ID copied' : 'Could not copy') : 'Not signed in yet', 0);
 $('scrim').onclick = close;
 $('exSel').addEventListener('change', drawChart);
 document.addEventListener('keydown', e => { if(e.key==='Escape') close(); });
