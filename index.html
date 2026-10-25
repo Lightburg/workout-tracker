@@ -127,9 +127,7 @@ details{margin-top:16px}summary{color:var(--muted);font-weight:700;font-size:14p
 (() => {
 const SUPABASE_URL = "https://olxahkslrrjqywsjaljj.supabase.co";
 const SUPABASE_KEY = "sb_publishable_NTTjfW44_mBVGb1pAuJFSA_zAwxCCY4";
-// Optional: free Gemini key from https://aistudio.google.com/apikey (leave "" to keep copy-paste mode)
-const GEMINI_KEY = "AQ.Ab8RN6LQeQ3MdsbFDwZ-dEPKzlqdkf7mWokrdtNdJjtgeWU_EQ";
-const GEMINI_MODEL = "gemini-flash-lite-latest"; // change if Google renames it
+const AI_ENABLED = true; // set to true after deploying the estimate-nutrients Supabase function
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -318,11 +316,11 @@ function mealForm(){
     const f = $('mFood').value.trim(); if(!f) return toast('Add what you ate', true);
     $('go').disabled = true;
     const row={entry_date:$('mDate').value||today(),meal_type:val('mt')||'Other',food_description:f,hunger_before:val('hb'),feeling_after:val('fa'),notes:$('mNotes').value.trim()||null};
-    if(!GEMINI_KEY){ const ok = await save(T.m,row); if(ok){ close(); toast('Meal saved'); load(); } else $('go').disabled=false; return; }
+    if(!AI_ENABLED){ const ok = await save(T.m,row); if(ok){ close(); toast('Meal saved'); load(); } else $('go').disabled=false; return; }
     const {data,error} = await db.from(T.m).insert([row]).select('id').single();
     if(error){ toast(error.message,true); $('go').disabled=false; return; }
     close(); toast('Meal saved. Estimating nutrients…'); await load();
-    try{ const o=await aiEstimate(f); const {error:e2}=await db.from(T.m).update(nutPayload(o)).eq('id',data.id); if(e2) throw e2; toast('Nutrients added'); load(); }
+    try{ const o=await aiEstimate(f); const {error:e2}=await db.from(T.m).update(nutPayload(o)).eq('id',data.id); if(e2) throw e2; toast('Nutrients added'+usageTxt()); load(); }
     catch(e){ toast('Saved, but no estimate: '+e.message,true); }
   };
 }
@@ -359,12 +357,14 @@ calories:250kcal,protein:26g,carbs:5g,fat:10g,fiber:3g,sugar:2g
 Rules: use your best estimate as whole numbers, grams for everything except calories (kcal). Include all six values in that order. If portions aren't given, assume one typical serving.
 
 Meal: ${meal}`;
+let aiUsage=null;
+const usageTxt = () => aiUsage ? ` (AI today: ${aiUsage.used}/${aiUsage.cap})` : '';
 async function aiEstimate(meal){
-  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_KEY}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:promptFor(meal)}]}],generationConfig:{temperature:.2,maxOutputTokens:256}})});
-  const j = await r.json();
-  if(!r.ok) throw new Error(j.error?.message || 'AI request failed');
-  const txt = j.candidates?.[0]?.content?.parts?.map(x=>x.text).join('') || '';
-  const o = parseNut(txt);
+  const r = await fetch(`${SUPABASE_URL}/functions/v1/estimate-nutrients`,{method:'POST',headers:{'Content-Type':'application/json',apikey:SUPABASE_KEY},body:JSON.stringify({meal})});
+  const j = await r.json().catch(()=>({}));
+  if(j.cap) aiUsage={used:j.usedToday,cap:j.cap};
+  if(!r.ok) throw new Error(j.error || 'AI request failed');
+  const o = parseNut(j.text||'');
   if(!Object.keys(o).length) throw new Error('AI gave an unreadable answer');
   return o;
 }
@@ -379,13 +379,13 @@ function nutForm(id){
   const pre = hasNut(m) ? NUT.filter(n=>m[n[3]]!=null).map(n=>n[0]+':'+m[n[3]]+(n[2]==='g'?'g':'kcal')).join(',') : '';
   open(head('Add nutrients') + `<p class="sub" style="margin-bottom:14px"><b style="color:var(--text)">${esc(m.meal_type)}:</b> ${esc(m.food_description)}</p>
   <label style="margin-top:0">Step 1: ask an AI</label><button class="chip" id="cpP">Copy AI prompt</button>
-  ${GEMINI_KEY?'<button class="chip on" id="aiGo" style="margin-left:8px">Estimate with AI</button>':''}
+  ${AI_ENABLED?'<button class="chip on" id="aiGo" style="margin-left:8px">Estimate with AI</button>':''}
   <label for="nIn">Step 2: paste its answer</label><textarea id="nIn" placeholder="calories:250kcal,protein:26g,carbs:5g,fat:10g,fiber:3g,sugar:2g">${esc(pre)}</textarea>
   <div class="hint" id="nPrev"></div><button class="save" id="go">Save nutrients</button>`);
   const prev=()=>{ const o=parseNut($('nIn').value), k=Object.keys(o); $('nPrev').textContent = k.length ? 'Reads as: '+NUT.filter(n=>o[n[0]]!=null).map(n=>n[1]+' '+o[n[0]]+n[2]).join(', ') : ($('nIn').value.trim()?'Could not read that. Check the format.':''); };
   $('nIn').addEventListener('input',prev); prev();
-  if(GEMINI_KEY) $('aiGo').onclick = async () => { const b=$('aiGo'); b.disabled=true; b.textContent='Estimating…';
-    try{ const o=await aiEstimate(m.food_description); $('nIn').value=NUT.filter(n=>o[n[0]]!=null).map(n=>n[0]+':'+o[n[0]]+(n[2]==='g'?'g':'kcal')).join(','); prev(); }
+  if(AI_ENABLED) $('aiGo').onclick = async () => { const b=$('aiGo'); b.disabled=true; b.textContent='Estimating…';
+    try{ const o=await aiEstimate(m.food_description); $('nIn').value=NUT.filter(n=>o[n[0]]!=null).map(n=>n[0]+':'+o[n[0]]+(n[2]==='g'?'g':'kcal')).join(','); prev(); toast('Estimated'+usageTxt()); }
     catch(e){ toast(e.message,true); } b.disabled=false; b.textContent='Estimate with AI'; };
   $('cpP').onclick = async () => toast(await copyText(promptFor(m.food_description)) ? 'Prompt copied. Paste it into any AI.' : 'Could not copy', 0);
   $('go').onclick = async () => {
