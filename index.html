@@ -3,364 +3,351 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#101114">
-<title>Progress — Workout & Food Tracker</title>
+<meta name="theme-color" content="#14161c">
+<title>Progress</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <style>
-:root{color-scheme:dark;--bg:#101114;--panel:#191b21;--panel2:#20232b;--line:#30333d;--text:#f4f5f7;--muted:#a7acb8;--accent:#b6f36b;--accent2:#d5ff9d;--danger:#ff8585;--radius:18px}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(900px 500px at 100% -10%,#252c26 0%,transparent 55%),var(--bg);color:var(--text);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-button,input,select,textarea{font:inherit}button{cursor:pointer}a{color:var(--accent)}
-.wrap{max-width:1120px;margin:auto;padding:20px 16px 60px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:6px 0 22px}.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;letter-spacing:-.5px}.logo{width:36px;height:36px;border-radius:12px;background:var(--accent);color:#101114;display:grid;place-items:center;font-weight:900}
-.pill{border:1px solid var(--line);border-radius:99px;padding:8px 11px;color:var(--muted);font-size:12px}
-h1{font-size:clamp(27px,5vw,42px);letter-spacing:-1.5px;line-height:1.08;margin:0 0 10px}h2{font-size:19px;margin:0 0 5px;letter-spacing:-.4px}h3{font-size:14px;margin:0 0 12px}p{margin:0;color:var(--muted)}.hero{display:flex;justify-content:space-between;gap:20px;align-items:flex-end;margin-bottom:22px}.hero p{max-width:570px}.eyebrow{color:var(--accent);font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px}
-.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px}.card{background:rgba(25,27,33,.96);border:1px solid var(--line);border-radius:var(--radius);padding:17px;min-width:0}.span-12{grid-column:span 12}.span-8{grid-column:span 8}.span-7{grid-column:span 7}.span-6{grid-column:span 6}.span-5{grid-column:span 5}.span-4{grid-column:span 4}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}.stat{background:var(--panel2);border-radius:14px;padding:13px}.stat .n{font-size:25px;font-weight:800;letter-spacing:-1px}.stat .l{font-size:12px;color:var(--muted);margin-top:2px}
-.tabs{display:flex;gap:6px;overflow:auto;padding:5px;background:#17191e;border:1px solid var(--line);border-radius:14px;margin:18px 0 14px}.tab{border:0;background:transparent;color:var(--muted);padding:10px 13px;border-radius:10px;white-space:nowrap;font-weight:700}.tab.active{background:var(--accent);color:#141610}
-label{display:block;color:#d7d9df;font-size:12px;font-weight:700;margin:0 0 6px}.field{margin-bottom:12px}input,select,textarea{width:100%;border:1px solid #3a3d47;background:#111318;color:var(--text);border-radius:11px;padding:11px 12px;outline:none;min-width:0}input:focus,select:focus,textarea:focus{border-color:var(--accent)}textarea{resize:vertical;min-height:75px}input[type=date]{color-scheme:dark}.row{display:flex;gap:10px}.row>*{flex:1;min-width:0}
-.btn{border:0;background:var(--accent);color:#141610;border-radius:11px;padding:11px 14px;font-weight:800}.btn:hover{background:var(--accent2)}.btn.secondary{background:#282b33;color:var(--text);border:1px solid var(--line)}.btn.danger{background:#44272b;color:#ffc5c5;border:1px solid #75434a}.btn.small{padding:7px 9px;font-size:12px}.actions{display:flex;gap:8px;flex-wrap:wrap}.hidden{display:none!important}.muted{color:var(--muted)}.smalltext{font-size:12px;color:var(--muted)}.list{display:flex;flex-direction:column;gap:8px}.item{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;background:#14161b;border:1px solid #2b2e37;padding:12px;border-radius:12px}.item strong{display:block}.item .meta{font-size:12px;color:var(--muted);margin-top:3px}.empty{padding:22px;text-align:center;color:var(--muted);border:1px dashed #3a3d47;border-radius:12px}.tag{display:inline-flex;padding:4px 8px;border-radius:99px;background:#283022;color:var(--accent);font-size:11px;font-weight:800}.status{font-size:12px;color:var(--muted);min-height:18px;margin-top:9px}.status.error{color:var(--danger)}.status.ok{color:var(--accent)}.chartbox{height:260px;position:relative}.sectionhead{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:14px}.sectionhead p{font-size:12px}.footer{margin-top:18px;text-align:center;font-size:12px;color:#777d89}.notice{padding:12px;border:1px solid #665a31;background:#292519;border-radius:12px;color:#e9d9a3;font-size:12px;margin-bottom:14px}.foodchips{display:flex;flex-wrap:wrap;gap:6px}.foodchips span{font-size:12px;border:1px solid var(--line);border-radius:99px;padding:6px 9px;color:var(--muted);cursor:pointer}.foodchips span:hover{border-color:var(--accent);color:var(--text)}
-@media(max-width:760px){.span-8,.span-7,.span-6,.span-5,.span-4{grid-column:span 12}.hero{display:block}.hero .pill{display:inline-block;margin-top:12px}.stats{gap:7px}.stat{padding:10px}.stat .n{font-size:21px}.wrap{padding:14px 12px 40px}.card{padding:14px}.row.mobile-stack{display:block}.row.mobile-stack>*{margin-bottom:10px}.top{margin-bottom:18px}}
+:root{color-scheme:dark;--bg:#14161c;--card:#1c1f27;--card2:#242832;--line:#2d313c;--text:#f2f0eb;--muted:#9aa0ad;--accent:#ffb454;--accent-ink:#2a1c05;--good:#7fd6a4;--bad:#ff8f8f;--r:20px;--head:"Bricolage Grotesque",system-ui,sans-serif;--body:"DM Sans",system-ui,-apple-system,sans-serif}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font:16px/1.5 var(--body);padding-bottom:calc(110px + env(safe-area-inset-bottom,0px))}
+button,input,textarea,select{font:inherit;color:inherit}button{cursor:pointer;border:0;background:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:640px;margin:auto;padding:calc(18px + env(safe-area-inset-top,0px)) 18px 0}
+header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px}
+h1{font:800 32px/1.1 var(--head);letter-spacing:-1px;margin:0 0 4px}
+.sub{color:var(--muted);margin:0}
+.sync{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;margin-top:8px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--good)}.dot.bad{background:var(--bad)}.dot.busy{background:var(--accent)}
+h2{font:700 19px/1.2 var(--head);margin:0 0 12px;letter-spacing:-.3px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin-bottom:14px}
+.week{display:flex;justify-content:space-between;gap:6px;margin:14px 0 4px}
+.day{flex:1;text-align:center;font-size:12px;color:var(--muted)}
+.day i{display:block;width:100%;aspect-ratio:1;max-width:38px;margin:6px auto 0;border-radius:50%;border:2px solid var(--line)}
+.day.on i{background:var(--accent);border-color:var(--accent)}.day.now{color:var(--text);font-weight:700}.day.now i{border-color:var(--text)}.day.on.now i{border-color:var(--accent);box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--accent)}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.tile{background:var(--card2);border:1px solid var(--line);border-radius:16px;padding:14px 10px;text-align:left;transition:transform .12s,border-color .12s}
+.tile:active{transform:scale(.97)}.tile:hover{border-color:var(--accent)}
+.tile b{display:block;font:700 15px var(--head)}.tile span{font-size:12.5px;color:var(--muted)}.tile.done span{color:var(--good)}
+.row{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:12px 0;border-top:1px solid var(--line)}
+.row:first-child{border-top:0;padding-top:0}.row:last-child{padding-bottom:0}
+.row .t{font-weight:700}.row .m{font-size:13px;color:var(--muted);margin-top:1px;overflow-wrap:anywhere}
+.x{color:var(--muted);font-size:13px;padding:6px 8px;border-radius:8px}.x:hover{color:var(--bad);background:var(--card2)}
+.dayh{font:700 13px var(--body);color:var(--muted);margin:20px 0 8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--card2);padding:8px 14px;border-radius:99px;font-size:14px;color:var(--muted)}
+.chip.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700}
+.seg{display:flex;gap:6px;margin-bottom:16px;overflow:auto}
+.empty{color:var(--muted);text-align:center;padding:26px 10px}
+nav{position:fixed;left:0;right:0;bottom:0;background:rgba(20,22,28,.94);backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:8px 18px calc(8px + env(safe-area-inset-bottom,0px));z-index:10}
+nav div{max-width:640px;margin:auto;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px}
+.nb{padding:10px;color:var(--muted);font-weight:700;border-radius:12px}.nb.on{color:var(--text)}
+.fab{width:56px;height:56px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-size:30px;font-weight:700;line-height:1;margin-top:-26px;box-shadow:0 8px 24px rgba(255,180,84,.3)}
+.fab:active{transform:scale(.94)}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:20;display:none}.scrim.open{display:block}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;background:var(--card);border-radius:26px 26px 0 0;border:1px solid var(--line);max-height:92vh;overflow:auto;padding:20px 18px calc(24px + env(safe-area-inset-bottom,0px));transform:translateY(105%);transition:transform .25s ease;max-width:640px;margin:auto}
+.sheet.open{transform:none}
+.sh{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.sh h2{margin:0}
+label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin:16px 0 7px}
+input,textarea,select{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:13px 14px;outline:none}
+input:focus,textarea:focus,select:focus{border-color:var(--accent)}textarea{min-height:80px;resize:vertical}input[type=date]{color-scheme:dark}
+.step{display:flex;align-items:center;gap:10px}.step button{width:48px;height:48px;border-radius:14px;background:var(--card2);border:1px solid var(--line);font-size:22px}
+.step input{text-align:center;font:700 20px var(--head)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.hint{font-size:13px;color:var(--accent);margin-top:8px;min-height:18px}
+details{margin-top:16px}summary{color:var(--muted);font-weight:700;font-size:14px;cursor:pointer;padding:4px 0}
+.save{width:100%;margin-top:22px;background:var(--accent);color:var(--accent-ink);font:700 17px var(--head);padding:16px;border-radius:16px}.save:disabled{opacity:.5}
+.pick{display:grid;gap:10px}.pick button{background:var(--card2);border:1px solid var(--line);border-radius:16px;padding:16px;text-align:left}.pick b{display:block;font:700 17px var(--head)}.pick span{color:var(--muted);font-size:14px}
+.toast{position:fixed;left:50%;bottom:calc(100px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--text);color:var(--bg);padding:12px 18px;border-radius:14px;font-weight:700;opacity:0;pointer-events:none;transition:.25s;z-index:30;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}.toast.err{background:var(--bad)}
+.best{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-top:1px solid var(--line)}.best:first-child{border-top:0}.best b{font:700 22px var(--head);color:var(--accent)}
+.chartbox{height:230px;position:relative;margin-top:14px}
+.hidden{display:none}
+.foot{text-align:center;color:#6d7380;font-size:12px;margin:26px 0 0}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
 <div class="wrap">
-<header class="top">
-<div class="brand"><div class="logo">P</div> progress<span style="color:var(--accent)">.</span></div>
-<div class="pill" id="cloudStatus">Connected to Supabase</div>
+<header>
+<div><h1 id="greet">Hey</h1><p class="sub" id="dateline"></p></div>
+<div class="sync"><span class="dot busy" id="dot"></span><span id="syncTxt">Syncing</span></div>
 </header>
-<main id="appScreen">
-<div class="hero">
-<div><div class="eyebrow">Small steps, real progress</div><h1>Build strength.<br>Keep the receipts.</h1><p>Track your workouts, food, energy, and progress over time. No perfect days required—just honest logs.</p></div>
-<div class="actions"><span class="pill">Personal Mode</span></div>
+
+<main>
+<section id="v-today">
+<div class="card">
+<h2 id="streakLine">Let's get started</h2>
+<p class="sub" id="streakSub">Log anything today and it counts.</p>
+<div class="week" id="week"></div>
 </div>
-<div class="notice">Health note: this tracker is for habits and strength—not for strict dieting. Eat regularly, avoid forcing rapid weight changes, and ask a trusted adult or clinician for help if needed.</div>
-<div class="stats">
-<div class="stat"><div class="n" id="workoutCount">0</div><div class="l">Workouts logged</div></div>
-<div class="stat"><div class="n" id="exerciseCount">0</div><div class="l">Exercise entries</div></div>
-<div class="stat"><div class="n" id="mealCount">0</div><div class="l">Meals logged this week</div></div>
-</div>
-<nav class="tabs" aria-label="Tracker sections">
-<button class="tab active" data-tab="dashboard">Overview</button><button class="tab" data-tab="workouts">Workouts</button><button class="tab" data-tab="diet">Food & habits</button><button class="tab" data-tab="progress">Progress</button>
-</nav>
-<section id="tab-dashboard" class="tabpage">
-<div class="grid">
-<div class="card span-7"><div class="sectionhead"><div><h2>Recent activity</h2><p>Your latest logs</p></div><span class="tag">LIVE</span></div><div id="recentList" class="list"></div></div>
-<div class="card span-5"><div class="sectionhead"><div><h2>Quick log</h2><p>Save something in seconds</p></div></div>
-<div class="actions"><button class="btn" data-goto="workouts">+ Workout</button><button class="btn secondary" data-goto="diet">+ Meal</button></div>
-<div style="height:16px"></div><h3>Today's check-in</h3>
-<div class="row">
-<div class="field"><label for="energy">Energy</label><select id="energy"><option value="">Choose…</option><option>Low</option><option>Okay</option><option>Good</option><option>Great</option></select></div>
-<div class="field"><label for="sleep">Sleep (hours)</label><input id="sleep" type="number" min="0" max="24" step=".5" placeholder="e.g. 8"></div>
-</div>
-<div class="field"><label for="dailyNote">Note (optional)</label><textarea id="dailyNote" placeholder="Mood, soreness, appetite, anything useful…"></textarea></div>
-<button class="btn" id="saveCheckin">Save check-in</button><div class="status" id="checkinStatus"></div>
-</div>
-<div class="card span-12"><div class="sectionhead"><div><h2>Strength trend</h2><p>See your logged reps for the selected exercise</p></div><select id="trendExercise" style="max-width:220px"></select></div><div class="chartbox"><canvas id="trendChart"></canvas></div><div class="smalltext">This chart shows reps per set for your exercise entries.</div></div>
-</div>
+<div class="tiles" id="tiles" style="margin-bottom:14px"></div>
+<div class="card"><h2>Today so far</h2><div id="todayList"></div></div>
+<div class="card" id="lastCard"></div>
 </section>
-<section id="tab-workouts" class="tabpage hidden">
-<div class="grid">
-<div class="card span-5"><h2>Log a workout exercise</h2><p style="margin:4px 0 16px">Add one entry for each exercise you do.</p>
-<form id="workoutForm">
-<div class="field"><label for="wDate">Date</label><input id="wDate" type="date" required></div>
-<div class="field"><label for="wName">Exercise</label><input id="wName" required placeholder="e.g. Incline push-ups"></div>
-<div class="row">
-<div class="field"><label for="wSets">Sets</label><input id="wSets" type="number" min="1" max="20" value="3" required></div>
-<div class="field"><label for="wReps">Reps per set</label><input id="wReps" type="number" min="1" max="200" value="8" required></div>
-</div>
-<div class="row">
-<div class="field"><label for="wLoad">Backpack weight (optional, lb)</label><input id="wLoad" type="number" min="0" max="100" step=".5" placeholder="Empty = bodyweight"></div>
-<div class="field"><label for="wEffort">Effort</label><select id="wEffort"><option value="">Choose…</option><option>Easy</option><option>Moderate</option><option>Hard</option></select></div>
-</div>
-<div class="field"><label for="wNotes">Notes</label><textarea id="wNotes" placeholder="Form, variation, how it felt…"></textarea></div>
-<button class="btn" type="submit">Save exercise</button><div class="status" id="workoutStatus"></div>
-</form>
-<div class="foodchips" id="exercisePresets" style="margin-top:15px"><span>Incline push-ups</span><span>Backpack rows</span><span>Squats</span><span>Glute bridges</span></div>
-</div>
-<div class="card span-7"><div class="sectionhead"><div><h2>Workout history</h2><p>Most recent first</p></div><input id="workoutSearch" placeholder="Search exercise…" style="max-width:190px"></div><div id="workoutList" class="list"></div></div>
-</div>
+
+<section id="v-history" class="hidden">
+<div class="seg" id="filter"></div>
+<div id="histList"></div>
 </section>
-<section id="tab-diet" class="tabpage hidden">
-<div class="grid">
-<div class="card span-5"><h2>Log food or a meal</h2><p style="margin:4px 0 16px">Record what you ate—no calorie target needed.</p>
-<form id="mealForm">
-<div class="field"><label for="mDate">Date</label><input id="mDate" type="date" required></div>
-<div class="field"><label for="mType">Meal / snack</label><select id="mType"><option>Breakfast</option><option>Morning snack</option><option>Lunch</option><option>Afternoon snack</option><option>Dinner</option><option>Evening snack</option><option>Drink</option><option>Other</option></select></div>
-<div class="field"><label for="mFood">What did you eat or drink?</label><textarea id="mFood" required placeholder="e.g. egg and cheese sandwich, milk"></textarea></div>
-<div class="row">
-<div class="field"><label for="mHunger">Hunger before</label><select id="mHunger"><option value="">Skip</option><option>Not hungry</option><option>A little hungry</option><option>Hungry</option><option>Very hungry</option></select></div>
-<div class="field"><label for="mFeel">After eating</label><select id="mFeel"><option value="">Skip</option><option>Comfortable</option><option>Still hungry</option><option>Too full</option></select></div>
+
+<section id="v-progress" class="hidden">
+<div class="card">
+<h2>Pick an exercise</h2>
+<select id="exSel"></select>
+<div class="chartbox"><canvas id="chart"></canvas></div>
+<p class="sub" style="font-size:13px;margin-top:10px">Each dot is one session. Going up means you're getting stronger.</p>
 </div>
-<div class="field"><label for="mNotes">Notes (optional)</label><textarea id="mNotes" placeholder="Appetite, what made this meal easier, etc."></textarea></div>
-<button class="btn" type="submit">Save meal</button><div class="status" id="mealStatus"></div>
-</form>
-</div>
-<div class="card span-7"><div class="sectionhead"><div><h2>Food log</h2><p>Use this to spot patterns.</p></div><input id="mealSearch" placeholder="Search food…" style="max-width:180px"></div><div id="mealList" class="list"></div></div>
-<div class="card span-12"><h2>Daily habits</h2><p style="margin:4px 0 14px">Optional check-in for hydration, sleep, energy, and appetite.</p>
-<form id="habitForm"><div class="row mobile-stack">
-<div class="field"><label for="hDate">Date</label><input id="hDate" type="date" required></div>
-<div class="field"><label for="hWater">Water (cups, estimate)</label><input id="hWater" type="number" min="0" max="50" placeholder="e.g. 6"></div>
-<div class="field"><label for="hSleep">Sleep (hours)</label><input id="hSleep" type="number" min="0" max="24" step=".5" placeholder="e.g. 8"></div>
-<div class="field"><label for="hEnergy">Energy</label><select id="hEnergy"><option value="">Choose…</option><option>Low</option><option>Okay</option><option>Good</option><option>Great</option></select></div>
-</div><div class="field"><label for="hNotes">Notes</label><textarea id="hNotes" placeholder="How was your appetite, mood, or recovery?"></textarea></div><button class="btn" type="submit">Save daily habits</button><div class="status" id="habitStatus"></div></form>
-<div style="height:14px"></div><div id="habitList" class="list"></div>
-</div>
-</div>
+<div class="card"><h2>Personal bests</h2><div id="bests"></div></div>
+<div class="card"><h2>Eating and energy</h2><p class="sub" id="insight">Log a few days and patterns will show up here.</p></div>
 </section>
-<section id="tab-progress" class="tabpage hidden">
-<div class="grid">
-<div class="card span-6"><h2>Exercise progress</h2><p style="margin:4px 0 14px">Choose an exercise to compare logged reps over time.</p><div class="field"><label for="progressExercise">Exercise</label><select id="progressExercise"></select></div><div class="chartbox"><canvas id="progressChart"></canvas></div></div>
-<div class="card span-6"><h2>Personal bests</h2><p style="margin:4px 0 14px">Based on the highest reps you've logged for each exercise.</p><div id="bestList" class="list"></div></div>
-<div class="card span-12"><h2>What progress means</h2><div style="height:8px"></div><div class="foodchips"><span>More clean reps</span><span>Better form</span><span>More controlled movement</span><span>Steady energy</span><span>Regular meals</span><span>Good sleep</span></div></div>
-</div>
-</section>
-<div class="status" id="globalStatus" aria-live="polite"></div>
 </main>
-<div class="footer">Personal tracker hosted securely via GitHub Pages & Supabase.</div>
+<div class="foot">Eat regularly, sleep well, and build slowly. If food or weight ever feels stressful, talk to someone you trust.</div>
 </div>
+
+<nav><div>
+<button class="nb on" data-v="today">Today</button>
+<button class="fab" id="fab" aria-label="Add a log">+</button>
+<div style="display:flex;justify-content:space-around"><button class="nb" data-v="history">History</button><button class="nb" data-v="progress">Progress</button></div>
+</div></nav>
+
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true"></div>
+<div class="toast" id="toast"></div>
+
 <script>
 (() => {
 const SUPABASE_URL = "https://olxahkslrrjqywsjaljj.supabase.co";
 const SUPABASE_KEY = "sb_publishable_NTTjfW44_mBVGb1pAuJFSA_zAwxCCY4";
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const $ = id => document.getElementById(id);
-const today = () => new Date(Date.now() - new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const iso = d => new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,10);
+const today = () => iso(new Date());
+const parse = s => new Date(s + 'T12:00:00');
 
-['wDate','mDate','hDate'].forEach(id => { if($(id)) $(id).value = today(); });
+let W = [], M = [], H = [], C = [], view = 'today', filter = 'all', chart = null;
+const T = {w:'workout_entries', m:'meal_entries', h:'daily_habits', c:'daily_checkins'};
 
-let client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-let workouts = [], meals = [], habits = [], checkins = [], trendChart = null, progressChart = null;
-
-function status(id, msg, type='') { const el=$(id); if(!el)return; el.textContent=msg; el.className='status '+type; }
-function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-
-async function fetchTable(table){
-  const {data,error}=await client.from(table).select('*').order('created_at',{ascending:false}).limit(500);
-  if(error)throw error;
-  return data||[];
-}
-
-async function refreshAll(){
-  $('cloudStatus').textContent = 'Syncing…';
+/* ---------- data ---------- */
+async function load(){
+  setSync('busy','Syncing');
   try{
-    [workouts, meals, habits, checkins] = await Promise.all([
-      fetchTable('workout_entries'),
-      fetchTable('meal_entries'),
-      fetchTable('daily_habits'),
-      fetchTable('daily_checkins')
-    ]);
-    $('cloudStatus').textContent = 'Connected to Supabase';
-    renderAll();
-  }catch(e){
-    $('cloudStatus').textContent = 'Sync issue';
-    status('globalStatus','Could not load data: '+e.message,'error');
-  }
+    const get = async t => { const {data,error} = await db.from(t).select('*').order('created_at',{ascending:false}).limit(1000); if(error) throw error; return data||[]; };
+    [W,M,H,C] = await Promise.all([get(T.w),get(T.m),get(T.h),get(T.c)]);
+    setSync('ok','Saved');
+    render();
+  }catch(e){ setSync('bad','Offline'); toast('Could not load: ' + e.message, true); }
+}
+function setSync(k,t){ $('dot').className = 'dot ' + (k==='ok'?'':k); $('syncTxt').textContent = t; }
+let tt; function toast(msg, err){ const t=$('toast'); t.textContent=msg; t.className='toast show'+(err?' err':''); clearTimeout(tt); tt=setTimeout(()=>t.className='toast',2600); }
+
+async function save(table, payload){
+  const {error} = await db.from(table).insert([payload]);
+  if(error){ toast(error.message, true); return false; } return true;
+}
+async function del(table,id){
+  if(!confirm('Delete this entry?')) return;
+  const {error} = await db.from(table).delete().eq('id', id);
+  if(error) return toast(error.message, true);
+  toast('Deleted'); load();
 }
 
-async function insert(table, payload, statusId){
-  const {error} = await client.from(table).insert([payload]);
-  if(error){status(statusId, error.message, 'error'); return false;}
-  status(statusId, 'Saved and synced.', 'ok');
-  await refreshAll();
-  return true;
+/* ---------- helpers ---------- */
+const activeDates = () => new Set([...W,...M,...H,...C].map(x=>x.entry_date));
+function streak(){
+  const s = activeDates(); let d = new Date(), n = 0;
+  if(!s.has(iso(d))) d.setDate(d.getDate()-1);
+  while(s.has(iso(d))){ n++; d.setDate(d.getDate()-1); }
+  return n;
 }
-
-async function removeRow(table, id){
-  if(!confirm('Delete this entry? This cannot be undone.')) return;
-  const {error} = await client.from(table).delete().eq('id', id);
-  if(error){status('globalStatus','Could not delete: '+error.message,'error'); return;}
-  status('globalStatus','Entry deleted.','ok');
-  await refreshAll();
+function ago(ds){
+  const n = Math.round((parse(today()) - parse(ds)) / 864e5);
+  return n<=0 ? 'today' : n===1 ? 'yesterday' : n + ' days ago';
 }
+const mealGuess = () => { const h=new Date().getHours(); return h<10?'Breakfast':h<12?'Morning snack':h<15?'Lunch':h<17?'Afternoon snack':h<21?'Dinner':'Evening snack'; };
+const wLine = x => `${x.sets} × ${x.reps}${x.load_lb!=null?' · '+x.load_lb+' lb':''}${x.effort?' · '+x.effort:''}`;
+const todayHabit = () => H.find(x=>x.entry_date===today());
 
-$('workoutForm').addEventListener('submit', async e => {
-  e.preventDefault();
-  const payload = {
-    entry_date: $('wDate').value,
-    exercise: $('wName').value.trim(),
-    sets: Number($('wSets').value),
-    reps: Number($('wReps').value),
-    load_lb: $('wLoad').value === '' ? null : Number($('wLoad').value),
-    effort: $('wEffort').value || null,
-    notes: $('wNotes').value.trim() || null
-  };
-  if(!payload.exercise) return;
-  if(await insert('workout_entries', payload, 'workoutStatus')){
-    const keepDate = $('wDate').value;
-    $('workoutForm').reset();
-    $('wDate').value = keepDate;
-    $('wSets').value = 3;
-    $('wReps').value = 8;
-  }
-});
+/* ---------- render ---------- */
+function render(){ renderToday(); renderHistory(); renderProgress(); }
 
-$('mealForm').addEventListener('submit', async e => {
-  e.preventDefault();
-  const payload = {
-    entry_date: $('mDate').value,
-    meal_type: $('mType').value,
-    food_description: $('mFood').value.trim(),
-    hunger_before: $('mHunger').value || null,
-    feeling_after: $('mFeel').value || null,
-    notes: $('mNotes').value.trim() || null
-  };
-  if(await insert('meal_entries', payload, 'mealStatus')){
-    const d = $('mDate').value;
-    $('mealForm').reset();
-    $('mDate').value = d;
-  }
-});
+function renderToday(){
+  const h = new Date().getHours();
+  $('greet').textContent = h<5?'Late night':h<12?'Good morning':h<18?'Good afternoon':'Good evening';
+  $('dateline').textContent = new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
+  const s = streak(), act = activeDates();
+  $('streakLine').textContent = s>=2 ? `${s} days in a row` : s===1 ? 'Nice, you showed up' : "Let's get started";
+  $('streakSub').textContent = s>=2 ? 'Showing up matters more than being perfect.' : 'Log anything today and it counts.';
+  const now = new Date(), mon = new Date(now); mon.setDate(now.getDate() - ((now.getDay()+6)%7));
+  $('week').innerHTML = ['M','T','W','T','F','S','S'].map((l,i)=>{ const d=new Date(mon); d.setDate(mon.getDate()+i); const k=iso(d);
+    return `<div class="day ${act.has(k)?'on':''} ${k===today()?'now':''}">${l}<i></i></div>`; }).join('');
 
-$('habitForm').addEventListener('submit', async e => {
-  e.preventDefault();
-  const payload = {
-    entry_date: $('hDate').value,
-    water_cups: $('hWater').value === '' ? null : Number($('hWater').value),
-    sleep_hours: $('hSleep').value === '' ? null : Number($('hSleep').value),
-    energy: $('hEnergy').value || null,
-    notes: $('hNotes').value.trim() || null
-  };
-  if(await insert('daily_habits', payload, 'habitStatus')){
-    const d = $('hDate').value;
-    $('habitForm').reset();
-    $('hDate').value = d;
-  }
-});
+  const tw = W.filter(x=>x.entry_date===today()), tm = M.filter(x=>x.entry_date===today()), th = todayHabit();
+  $('tiles').innerHTML = `
+    <button class="tile ${tw.length?'done':''}" data-add="w"><b>Workout</b><span>${tw.length?tw.length+' logged':'Not yet'}</span></button>
+    <button class="tile ${tm.length?'done':''}" data-add="m"><b>Meal</b><span>${tm.length?tm.length+' logged':'Not yet'}</span></button>
+    <button class="tile ${th?'done':''}" data-add="h"><b>Check-in</b><span>${th?'Done':'How are you?'}</span></button>`;
 
-$('saveCheckin').addEventListener('click', async () => {
-  const payload = {
-    entry_date: today(),
-    energy: $('energy').value || null,
-    sleep_hours: $('sleep').value === '' ? null : Number($('sleep').value),
-    notes: $('dailyNote').value.trim() || null
-  };
-  if(await insert('daily_checkins', payload, 'checkinStatus')){
-    $('energy').value = '';
-    $('sleep').value = '';
-    $('dailyNote').value = '';
-  }
-});
+  const items = [
+    ...tw.map(x=>({t:x.exercise,m:wLine(x),tb:T.w,id:x.id})),
+    ...tm.map(x=>({t:x.meal_type,m:x.food_description,tb:T.m,id:x.id})),
+    ...(th?[{t:'Check-in',m:[th.energy&&'Energy: '+th.energy, th.sleep_hours!=null&&th.sleep_hours+' h sleep', th.water_cups!=null&&th.water_cups+' cups water'].filter(Boolean).join(' · '),tb:T.h,id:th.id}]:[])
+  ];
+  $('todayList').innerHTML = items.length ? items.map(rowHtml).join('') : '<div class="empty">Nothing yet. Tap + whenever you\'re ready.</div>';
 
-function item(title, meta, id, table, desc=''){
-  return `<div class="item"><div><strong>${esc(title)}</strong><div class="meta">${esc(meta)}</div>${desc?`<div class="meta">${esc(desc)}</div>`:''}</div><button class="btn danger small" data-delete="${esc(table)}" data-id="${esc(id)}" aria-label="Delete entry">Delete</button></div>`;
+  const lw = W[0];
+  $('lastCard').innerHTML = lw ? `<h2>Last workout</h2><div class="row"><div><div class="t">${esc(lw.exercise)}</div><div class="m">${wLine(lw)} · ${ago(lw.entry_date)}</div></div><button class="chip" data-again="${esc(lw.exercise)}">Do it again</button></div>` : '';
+  $('lastCard').classList.toggle('hidden', !lw);
 }
+const rowHtml = x => `<div class="row"><div><div class="t">${esc(x.t)}</div><div class="m">${esc(x.m)}</div></div><button class="x" data-del="${x.tb}" data-id="${esc(x.id)}" aria-label="Delete">Delete</button></div>`;
 
-function noItems(msg){return `<div class="empty">${esc(msg)}</div>`;}
-
-function renderWorkouts(){
-  const q = $('workoutSearch').value.toLowerCase();
-  const filtered = workouts.filter(x => (x.exercise||'').toLowerCase().includes(q));
-  $('workoutList').innerHTML = filtered.length ? filtered.map(x => item(x.exercise, `${x.entry_date} · ${x.sets} sets × ${x.reps} reps${x.load_lb!=null?' · '+x.load_lb+' lb':''}${x.effort?' · '+x.effort:''}`, x.id, 'workout_entries', x.notes||'')).join('') : noItems('No workout entries yet.');
-  $('workoutCount').textContent = new Set(workouts.map(x => x.entry_date)).size;
-  $('exerciseCount').textContent = workouts.length;
-}
-
-function renderMeals(){
-  const q = $('mealSearch').value.toLowerCase();
-  const filtered = meals.filter(x => ((x.food_description||'') + ' ' + (x.meal_type||'')).toLowerCase().includes(q));
-  $('mealList').innerHTML = filtered.length ? filtered.map(x => item(x.meal_type, `${x.entry_date}${x.hunger_before?' · Hunger: '+x.hunger_before:''}${x.feeling_after?' · After: '+x.feeling_after:''}`, x.id, 'meal_entries', x.food_description+(x.notes?' — '+x.notes:''))).join('') : noItems('No food logs yet.');
-  
-  const d = new Date(); const day = (d.getDay()+6)%7; d.setDate(d.getDate()-day); d.setHours(0,0,0,0); const monday = d.toISOString().slice(0,10);
-  $('mealCount').textContent = meals.filter(x => x.entry_date >= monday).length;
-  $('habitList').innerHTML = habits.length ? habits.slice(0,10).map(x => item(x.entry_date, `${x.water_cups!=null?'Water: '+x.water_cups+' cups · ':''}${x.sleep_hours!=null?'Sleep: '+x.sleep_hours+' h · ':''}${x.energy||''}`, x.id, 'daily_habits', x.notes||'')).join('') : noItems('No daily habit logs yet.');
-}
-
-function renderRecent(){
+function renderHistory(){
+  $('filter').innerHTML = [['all','Everything'],['w','Workouts'],['m','Meals'],['h','Check-ins']].map(([k,l])=>`<button class="chip ${filter===k?'on':''}" data-f="${k}">${l}</button>`).join('');
   const all = [
-    ...workouts.map(x => ({date: x.entry_date, title: x.exercise, meta: `Workout · ${x.sets} × ${x.reps}`})),
-    ...meals.map(x => ({date: x.entry_date, title: x.meal_type, meta: x.food_description})),
-    ...checkins.map(x => ({date: x.entry_date, title: 'Daily check-in', meta: [x.energy, x.sleep_hours!=null?x.sleep_hours+' h sleep':'', x.notes].filter(Boolean).join(' · ')}))
-  ].sort((a,b) => (b.date||'').localeCompare(a.date||'')).slice(0,8);
-  $('recentList').innerHTML = all.length ? all.map(x => `<div class="item"><div><strong>${esc(x.title)}</strong><div class="meta">${esc(x.date)} · ${esc(x.meta)}</div></div></div>`).join('') : noItems('Your recent activity will show up here.');
-}
-
-function exerciseOptions(){
-  const names = [...new Set(workouts.map(x => x.exercise).filter(Boolean))].sort((a,b) => a.localeCompare(b));
-  ['trendExercise','progressExercise'].forEach(id => {
-    const old = $(id).value;
-    $(id).innerHTML = names.length ? names.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('') : '<option value="">Log an exercise first</option>';
-    if(names.includes(old)) $(id).value = old;
+    ...W.map(x=>({k:'w',d:x.entry_date,c:x.created_at,t:x.exercise,m:wLine(x)+(x.notes?' — '+x.notes:''),tb:T.w,id:x.id})),
+    ...M.map(x=>({k:'m',d:x.entry_date,c:x.created_at,t:x.meal_type,m:x.food_description+(x.feeling_after?' · '+x.feeling_after:''),tb:T.m,id:x.id})),
+    ...H.map(x=>({k:'h',d:x.entry_date,c:x.created_at,t:'Check-in',m:[x.energy,x.sleep_hours!=null&&x.sleep_hours+' h sleep',x.water_cups!=null&&x.water_cups+' cups',x.notes].filter(Boolean).join(' · '),tb:T.h,id:x.id})),
+    ...C.map(x=>({k:'h',d:x.entry_date,c:x.created_at,t:'Check-in',m:[x.energy,x.sleep_hours!=null&&x.sleep_hours+' h sleep',x.notes].filter(Boolean).join(' · '),tb:T.c,id:x.id}))
+  ].filter(x=>filter==='all'||x.k===filter).sort((a,b)=>b.d.localeCompare(a.d)||String(b.c).localeCompare(String(a.c)));
+  if(!all.length){ $('histList').innerHTML = '<div class="card empty">Nothing here yet.</div>'; return; }
+  let out = '', cur = '';
+  all.slice(0,150).forEach(x=>{
+    if(x.d!==cur){ if(cur) out+='</div>'; cur=x.d; out+=`<div class="dayh">${parse(x.d).toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'})}</div><div class="card" style="padding:14px 18px">`; }
+    out += rowHtml(x);
   });
+  $('histList').innerHTML = out + '</div>';
 }
 
-function makeChart(canvasId, selectId, existing){
-  const name = $(selectId).value;
-  const data = workouts.filter(x => x.exercise === name).sort((a,b) => (a.entry_date||'').localeCompare(b.entry_date||'') || String(a.created_at).localeCompare(String(b.created_at)));
-  const labels = data.map(x => x.entry_date);
-  const values = data.map(x => x.reps);
-  
-  if(existing) existing.destroy();
-  if(!name || !data.length) return null;
-
-  return new Chart($(canvasId), {
-    type: 'line',
-    data: {
-      labels, 
-      datasets:[{
-        label:'Reps per set', 
-        data:values, 
-        borderColor:'#b6f36b', 
-        backgroundColor:'rgba(182,243,107,.12)', 
-        fill:true, 
-        tension:.25, 
-        pointRadius:4
-      }]
-    },
-    options: {
-      responsive:true, 
-      maintainAspectRatio:false, 
-      plugins:{legend:{labels:{color:'#a7acb8'}}}, 
-      scales:{
-        x:{ticks:{color:'#a7acb8', maxRotation:45}, grid:{color:'#30333d'}}, 
-        y:{beginAtZero:true, ticks:{color:'#a7acb8', precision:0}, grid:{color:'#30333d'}}
-      }
-    }
-  });
+function renderProgress(){
+  const names = [...new Set(W.map(x=>x.exercise))].sort();
+  const old = $('exSel').value;
+  $('exSel').innerHTML = names.length ? names.map(n=>`<option>${esc(n)}</option>`).join('') : '<option value="">Log a workout first</option>';
+  if(names.includes(old)) $('exSel').value = old;
+  drawChart();
+  const best = {}; W.forEach(x=>{ if(!best[x.exercise]||x.reps>best[x.exercise].reps) best[x.exercise]=x; });
+  const arr = Object.values(best).sort((a,b)=>b.reps-a.reps);
+  $('bests').innerHTML = arr.length ? arr.map(x=>`<div class="best"><div><div class="t">${esc(x.exercise)}</div><div class="m sub" style="font-size:13px">${parse(x.entry_date).toLocaleDateString(undefined,{month:'short',day:'numeric'})}${x.load_lb!=null?' · '+x.load_lb+' lb':''}</div></div><b>${x.reps}</b></div>`).join('') : '<div class="empty">Your best lifts will show up here.</div>';
+  const hungry = M.filter(x=>x.feeling_after==='Still hungry').length, ok = M.filter(x=>x.feeling_after==='Comfortable').length;
+  const sl = [...H,...C].filter(x=>x.sleep_hours!=null).slice(0,7);
+  const avg = sl.length ? (sl.reduce((a,b)=>a+Number(b.sleep_hours),0)/sl.length).toFixed(1) : null;
+  const bits = [];
+  if(avg) bits.push(`You've averaged ${avg} hours of sleep lately.`);
+  if(ok+hungry>=3) bits.push(`${ok} of your last meals left you comfortable and ${hungry} left you still hungry.`);
+  $('insight').textContent = bits.join(' ') || 'Log a few days and patterns will show up here.';
+}
+function drawChart(){
+  if(chart){ chart.destroy(); chart=null; }
+  const n = $('exSel').value; if(!n) return;
+  const d = W.filter(x=>x.exercise===n).sort((a,b)=>a.entry_date.localeCompare(b.entry_date)||String(a.created_at).localeCompare(String(b.created_at)));
+  chart = new Chart($('chart'),{type:'line',data:{labels:d.map(x=>parse(x.entry_date).toLocaleDateString(undefined,{month:'short',day:'numeric'})),datasets:[{label:'Reps per set',data:d.map(x=>x.reps),borderColor:'#ffb454',backgroundColor:'rgba(255,180,84,.14)',fill:true,tension:.3,pointRadius:5,pointBackgroundColor:'#ffb454'}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#9aa0ad'},grid:{display:false}},y:{beginAtZero:true,ticks:{color:'#9aa0ad',precision:0},grid:{color:'#2d313c'}}}}});
 }
 
-function renderBests(){
-  const map = {};
-  workouts.forEach(x => {if(!map[x.exercise] || x.reps > map[x.exercise].reps) map[x.exercise] = x;});
-  const arr = Object.values(map).sort((a,b) => b.reps - a.reps);
-  $('bestList').innerHTML = arr.length ? arr.map(x => `<div class="item"><div><strong>${esc(x.exercise)}</strong><div class="meta">${x.reps} reps/set · ${x.sets} sets · ${esc(x.entry_date)}${x.load_lb!=null?' · '+x.load_lb+' lb':''}</div></div><span class="tag">${x.reps} reps</span></div>`).join('') : noItems('Your bests will appear after you log workouts.');
+/* ---------- sheet / forms ---------- */
+const sheet = $('sheet');
+function open(html){ sheet.innerHTML = html; $('scrim').classList.add('open'); requestAnimationFrame(()=>sheet.classList.add('open')); }
+function close(){ sheet.classList.remove('open'); $('scrim').classList.remove('open'); }
+const head = t => `<div class="sh"><h2>${t}</h2><button class="x" data-close>Close</button></div>`;
+const chips = (name, opts, sel) => `<div class="chips" data-chips="${name}">${opts.map(o=>`<button type="button" class="chip ${o===sel?'on':''}">${o}</button>`).join('')}</div>`;
+const val = name => { const e = sheet.querySelector(`[data-chips="${name}"] .on`); return e ? e.textContent : null; };
+const num = id => { const v = $(id).value; return v==='' ? null : Number(v); };
+const stepper = (id,v,min,max,step=1) => `<div class="step"><button type="button" data-s="${id}" data-d="-${step}" aria-label="Less">−</button><input id="${id}" type="number" inputmode="decimal" min="${min}" max="${max}" step="${step}" value="${v}"><button type="button" data-s="${id}" data-d="${step}" aria-label="More">+</button></div>`;
+
+function chooser(){
+  open(head('What do you want to log?') + `<div class="pick"><button data-add="w"><b>Workout</b><span>An exercise, sets and reps</span></button><button data-add="m"><b>Meal or snack</b><span>What you ate, in your own words</span></button><button data-add="h"><b>Check-in</b><span>Energy, sleep and water</span></button></div>`);
 }
 
-function renderAll(){
-  renderWorkouts(); renderMeals(); renderRecent(); exerciseOptions(); renderBests();
-  trendChart = makeChart('trendChart', 'trendExercise', trendChart);
-  progressChart = makeChart('progressChart', 'progressExercise', progressChart);
+function workoutForm(pre){
+  const recent = [...new Map(W.map(x=>[x.exercise,x])).keys()].slice(0,6);
+  const sug = recent.length ? recent : ['Incline push-ups','Squats','Backpack rows','Glute bridges'];
+  open(head('Log an exercise') + `
+  <label for="wName" style="margin-top:0">Exercise</label>
+  <input id="wName" list="exList" placeholder="e.g. Squats" autocomplete="off" value="${esc(pre||'')}">
+  <datalist id="exList">${[...new Set(W.map(x=>x.exercise))].map(n=>`<option value="${esc(n)}">`).join('')}</datalist>
+  <div class="chips" id="sug" style="margin-top:10px">${sug.map(n=>`<button type="button" class="chip">${esc(n)}</button>`).join('')}</div>
+  <div class="hint" id="wHint"></div>
+  <div class="two"><div><label>Sets</label>${stepper('wSets',3,1,20)}</div><div><label>Reps per set</label>${stepper('wReps',8,1,200)}</div></div>
+  <details><summary>More details</summary>
+    <label>Extra weight (lb)</label><input id="wLoad" type="number" inputmode="decimal" min="0" step=".5" placeholder="Leave empty for bodyweight">
+    <label>How did it feel?</label>${chips('effort',['Easy','Moderate','Hard'])}
+    <label>Notes</label><textarea id="wNotes" placeholder="Form, how it felt…"></textarea>
+    <label>Date</label><input id="wDate" type="date" value="${today()}">
+  </details>
+  <button class="save" id="go">Save exercise</button>`);
+  const fill = () => { const n=$('wName').value.trim().toLowerCase(); const last = W.find(x=>x.exercise.toLowerCase()===n);
+    if(last){ $('wSets').value=last.sets; $('wReps').value=last.reps; if(last.load_lb!=null) $('wLoad').value=last.load_lb; $('wHint').textContent=`Last time: ${wLine(last)} (${ago(last.entry_date)})`; } else $('wHint').textContent=''; };
+  $('wName').addEventListener('input', fill);
+  $('sug').addEventListener('click', e=>{ if(e.target.classList.contains('chip')){ $('wName').value=e.target.textContent; fill(); } });
+  if(pre) fill();
+  $('go').onclick = async () => {
+    const ex = $('wName').value.trim(); if(!ex) return toast('Add an exercise name', true);
+    const prevBest = Math.max(0, ...W.filter(x=>x.exercise.toLowerCase()===ex.toLowerCase()).map(x=>x.reps));
+    const reps = Number($('wReps').value), hadBefore = W.some(x=>x.exercise.toLowerCase()===ex.toLowerCase());
+    $('go').disabled = true;
+    const ok = await save(T.w,{entry_date:$('wDate').value||today(),exercise:ex,sets:Number($('wSets').value),reps,load_lb:num('wLoad'),effort:val('effort'),notes:$('wNotes').value.trim()||null});
+    if(ok){ close(); toast(hadBefore && reps>prevBest ? 'New personal best on ' + ex + '!' : 'Exercise saved'); load(); } else $('go').disabled=false;
+  };
 }
 
-$('workoutSearch').addEventListener('input', renderWorkouts);
-$('mealSearch').addEventListener('input', renderMeals);
-$('trendExercise').addEventListener('change', () => { trendChart = makeChart('trendChart', 'trendExercise', trendChart); });
-$('progressExercise').addEventListener('change', () => { progressChart = makeChart('progressChart', 'progressExercise', progressChart); });
-
-document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => {
-  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t === b));
-  document.querySelectorAll('.tabpage').forEach(p => p.classList.toggle('hidden', p.id !== 'tab-' + b.dataset.tab));
-  if(b.dataset.tab === 'progress') progressChart = makeChart('progressChart', 'progressExercise', progressChart);
-}));
-
-document.querySelectorAll('[data-goto]').forEach(b => b.addEventListener('click', () => {
-  const targetTab = document.querySelector(`[data-tab="${b.dataset.goto}"]`);
-  if(targetTab) targetTab.click();
-}));
-
-const presets = $('exercisePresets');
-if(presets){
-  presets.addEventListener('click', e => {
-    if(e.target.tagName === 'SPAN'){
-      $('wName').value = e.target.textContent;
-    }
-  });
+function mealForm(){
+  open(head('Log a meal') + `
+  <label style="margin-top:0">Which one?</label>${chips('mt',['Breakfast','Morning snack','Lunch','Afternoon snack','Dinner','Evening snack','Drink'],mealGuess())}
+  <label for="mFood">What did you have?</label><textarea id="mFood" placeholder="e.g. egg and cheese sandwich, milk"></textarea>
+  <details><summary>More details</summary>
+    <label>Hunger before</label>${chips('hb',['Not hungry','A little','Hungry','Very hungry'])}
+    <label>How did you feel after?</label>${chips('fa',['Comfortable','Still hungry','Too full'])}
+    <label>Notes</label><textarea id="mNotes" placeholder="Anything worth remembering"></textarea>
+    <label>Date</label><input id="mDate" type="date" value="${today()}">
+  </details>
+  <button class="save" id="go">Save meal</button>`);
+  $('go').onclick = async () => {
+    const f = $('mFood').value.trim(); if(!f) return toast('Add what you ate', true);
+    $('go').disabled = true;
+    const ok = await save(T.m,{entry_date:$('mDate').value||today(),meal_type:val('mt')||'Other',food_description:f,hunger_before:val('hb'),feeling_after:val('fa'),notes:$('mNotes').value.trim()||null});
+    if(ok){ close(); toast('Meal saved'); load(); } else $('go').disabled=false;
+  };
 }
 
-document.addEventListener('click', e => { 
-  const b = e.target.closest('[data-delete]'); 
-  if(b) removeRow(b.dataset.delete, b.dataset.id); 
+function checkinForm(){
+  const h = todayHabit() || {};
+  open(head(h.id ? 'Update today\'s check-in' : 'Quick check-in') + `
+  <label style="margin-top:0">Energy</label>${chips('en',['Low','Okay','Good','Great'],h.energy)}
+  <div class="two"><div><label>Sleep (hours)</label>${stepper('hSleep',h.sleep_hours??8,0,24,.5)}</div><div><label>Water (cups)</label>${stepper('hWater',h.water_cups??0,0,50)}</div></div>
+  <label for="hNotes">Anything else?</label><textarea id="hNotes" placeholder="Mood, soreness, appetite…">${esc(h.notes||'')}</textarea>
+  <button class="save" id="go">Save check-in</button>`);
+  $('go').onclick = async () => {
+    const p = {entry_date:today(),energy:val('en'),sleep_hours:num('hSleep'),water_cups:num('hWater'),notes:$('hNotes').value.trim()||null};
+    $('go').disabled = true;
+    let ok;
+    if(h.id){ const {error} = await db.from(T.h).update(p).eq('id',h.id); ok = !error; if(error) toast(error.message,true); }
+    else ok = await save(T.h,p);
+    if(ok){ close(); toast('Check-in saved'); load(); } else $('go').disabled=false;
+  };
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click', e => {
+  const t = e.target;
+  const add = t.closest('[data-add]'); if(add){ const k=add.dataset.add; return k==='w'?workoutForm():k==='m'?mealForm():checkinForm(); }
+  const ag = t.closest('[data-again]'); if(ag) return workoutForm(ag.dataset.again);
+  const d = t.closest('[data-del]'); if(d) return del(d.dataset.del, d.dataset.id);
+  const f = t.closest('[data-f]'); if(f){ filter=f.dataset.f; return renderHistory(); }
+  const s = t.closest('[data-s]'); if(s){ const i=$(s.dataset.s), st=Number(i.step)||1; i.value = Math.min(Number(i.max), Math.max(Number(i.min), (Number(i.value)||0)+Number(s.dataset.d))); return; }
+  const c = t.closest('[data-chips] .chip'); if(c){ const g=c.parentElement, was=c.classList.contains('on'); g.querySelectorAll('.chip').forEach(x=>x.classList.remove('on')); if(!was) c.classList.add('on'); return; }
+  if(t.closest('[data-close]')) return close();
+  const nb = t.closest('.nb'); if(nb){ view=nb.dataset.v; document.querySelectorAll('.nb').forEach(b=>b.classList.toggle('on',b===nb)); ['today','history','progress'].forEach(v=>$('v-'+v).classList.toggle('hidden',v!==view)); if(view==='progress') drawChart(); window.scrollTo(0,0); }
 });
+$('fab').onclick = chooser;
+$('scrim').onclick = close;
+$('exSel').addEventListener('change', drawChart);
+document.addEventListener('keydown', e => { if(e.key==='Escape') close(); });
 
-refreshAll();
+load();
 })();
 </script>
 </body>
