@@ -128,7 +128,7 @@ details{margin-top:16px}summary{color:var(--muted);font-weight:700;font-size:14p
 (() => {
 const SUPABASE_URL = "https://olxahkslrrjqywsjaljj.supabase.co";
 const SUPABASE_KEY = "sb_publishable_NTTjfW44_mBVGb1pAuJFSA_zAwxCCY4";
-const AI_ENABLED = false; // set to true after deploying the estimate-nutrients Supabase function
+const AI_ENABLED = true; // set to true after deploying the estimate-nutrients Supabase function
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
